@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates application load balancer.
+Parameters:
+  Tag:
+    Description: Specify Tag for the Stack.
+    Default: 'Test'
+    Type: String
+    MaxLength: 20
+  pDMZSubnetA:
+    Description: DMZ Subnet A
+    Type: AWS::EC2::Subnet::Id
+  pDMZSubnetB:
+    Description: DMZ Subnet B
+    Type: AWS::EC2::Subnet::Id
+  pEnvironment:
+    Description: Environment type (development, test, or production)
+    Type: String
+    Default: development
+  rCertificateArn:
+    Description: SSL Certificate for application load balancer.
+    Type: String
+    Default: ''
+  pProductionVPC:
+    Description: Vpc ID
+    Type: AWS::EC2::VPC::Id
+  pWebServerAMI:
+    Description: AMI
+    Type: String
+    Default: ami-xxx
+  pEC2KeyPair:
+    Description: The SSH key pair in your account to use for all other EC2 instance logins
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+  rALBWeb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+
+    Properties: 
+
+      Name: !Join [ "-", [!Ref Tag, ALBWeb]]
+      Scheme: internet-facing
+
+      Subnets: 
+      - !Ref pDMZSubnetA
+      - !Ref pDMZSubnetB
+      Tags: 
+      - Key: Name
+        Value: Proxy ALB
+      - Key: Environment
+        Value: !Ref pEnvironment
+      Type: application
+
+
+# #### Creates a listner 
+  HTTPlistenerWeb:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+    - rALBWeb
+    - rTargetGroupWeb
+    Properties:
+      Certificates: 
+      - CertificateArn: !Ref rCertificateArn
+      DefaultActions:
+        - Type: "forward"
+          ForwardConfig:
+            TargetGroups: 
+            - TargetGroupArn: !Ref rTargetGroupWeb
+              Weight: 1
+      LoadBalancerArn: !Ref rALBWeb
+      Port: "443"
+      Protocol: "HTTPS"
+
+
+## Target Group
+  rTargetGroupWeb:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Matcher: 
+         HttpCode: 200
+      Name: !Join [ "-", [!Ref Tag, TargetGroupWeb]]
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref pProductionVPC
+
+## Instance Role and Profile
+  rWebInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ["-", [!Ref Tag, WebInstanceRole]]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+
+  rWebInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn:
+    - rWebInstanceRole
+    Properties:
+      Path: /
+      Roles:
+      - !Ref rWebInstanceRole
+      InstanceProfileName: !Join ["-", [ !Ref Tag, WebInstanceProfile]]
+
+# Auto scaling
+  mySimpleConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    DependsOn: 
+    - rWebInstanceProfile
+    Properties: 
+      AssociatePublicIpAddress: true
+      BlockDeviceMappings: 
+      - DeviceName: /dev/sdh
+        Ebs:
+          VolumeSize: 50
+          VolumeType: gp2
+      # ClassicLinkVPCId: String
+      # ClassicLinkVPCSecurityGroups: 
+      #   - String
+      # EbsOptimized: Boolean
+      IamInstanceProfile: !Ref rWebInstanceProfile
+      ImageId: !Ref pWebServerAMI
+      # InstanceId: t2.micro
+      # InstanceMonitoring: Boolean
+      InstanceType: m4.large
+      # KernelId: String
+      KeyName: !Ref pEC2KeyPair
+      LaunchConfigurationName: launchConfig
+      # MetadataOptions: 
+      #   MetadataOption
+      # PlacementTenancy: String
+      # RamDiskId: String
+      # SecurityGroups: 
+      #   - String
+      # SpotPrice: String
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install httpd -y
+          service httpd start
+          systemctl enable httpd.service
+          echo '<h1><marquee>Welcome</marquee></h1>' > /var/www/html/index.html
+          chown -R ec2-user.ec2-user /var/www/html
+          chmod 755 -R /var/www/html
+
+  myServerGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: 
+    - mySimpleConfig
+    - rTargetGroupWeb
+
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref pDMZSubnetA
+        - !Ref pDMZSubnetB
+      LaunchConfigurationName: !Ref mySimpleConfig
+      MinSize: '1'
+      MaxSize: '5'
+
+      HealthCheckGracePeriod: 300
+      MaxInstanceLifetime: 2592000
+      TargetGroupARNs:
+        - !Ref rTargetGroupWeb
+      Tags:
+      - Key: Name
+        Value: !Join [ "-", [!Ref Tag, Proxy Server]]
+        PropagateAtLaunch: true
+      - Key: Environment
+        Value: !Ref pEnvironment
+        PropagateAtLaunch: true

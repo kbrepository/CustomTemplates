@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  Tag:
+    Description: Specify Tag for the Stack.
+    Default: 'kbtest'
+    Type: String
+    MaxLength: 20
+  S3BucketName:
+    Default: 'hipaa-on-aws-cirrusform'
+    Type: String
+  OsPlatform:
+    Type: String
+    Default: 'Linux'
+    AllowedValues: ['Linux', 'CentOs', 'Ubuntu', 'Windows']
+  stack:
+    Default: 'one'
+    Type: String
+    AllowedValues: [ 'one', 'two', 'three']
+Conditions:
+  # LaunchLinuxInstances: !Equals [ !Ref OsPlatform, 'Linux' ]
+  cond1: !Equals
+    - !Ref stack
+    - 'one'
+  cond2: !Equals
+    - !Ref stack
+    - 'two'
+  cond3: !Equals
+    - !Ref stack
+    - 'three'
+  MyCondition: !And
+    - !Equals [ 'Linux', !Ref OsPlatform]
+    - !Condition cond1
+
+  
+Resources:
+  AppStack:
+    # Condition: cond1
+    Condition: MyCondition
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/testTemplates/test1.yml
+  AppStack2:
+    Condition: cond2
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/testTemplates/test2.yml
+  AppStack3:
+    Condition: cond3
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/testTemplates/test3.yml
+
+
+        # - !If [cond1, , https://hipaa-on-aws-cirrusform.s3.amazonaws.com/testTemplates/test2.yml]
+      #   - cond1 
+      #   - 
+      #   - https://hipaa-on-aws-cirrusform.s3.amazonaws.com/testTemplates/test2.yml
+      # - https://${DynamicTemplatLocation}
+          # - !Sub 
+          # - https://${S3BucketName}.s3.amazonaws.com/testTemplates/test2.yml
+          # - S3BucketName

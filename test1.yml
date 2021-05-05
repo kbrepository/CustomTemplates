@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  Tag:
+    Description: Specify Tag for the Stack.
+    Default: 'kbtest'
+    Type: String
+    MaxLength: 20
+Resources:
+  rS3ALBAccessLogs:
+    Type: AWS::S3::Bucket
+    # DeletionPolicy: Retain
+    Properties:
+      BucketName: !Join [ "-", [!Ref Tag, bucket1]]
+      # AccessControl: Private
