@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Provides nesting for required stacks to deploy a LAMP stack
+Description: Provides nesting for required stacks to deploy a Drupal stack
   with reverse proxy, ALBs, IAM, and other resources (for demonstration/POC/testing)
 Metadata:
   Stack:
