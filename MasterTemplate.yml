@@ -258,6 +258,11 @@ Mappings:
       WINDOWSHVM: ami-04a18ed8b7b44aced
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
+    ap-northeast-3:
+      AMZN2LINUXHVM: ami-043bb1ed348aaf857
+      WINDOWSHVM: ami-07ccf1d179f168f14
+      InstanceType: m4.large
+      InstanceTypeDatabase: db.m4.large
     ap-south-1:
       AMZN2LINUXHVM: ami-0ebc1ac48dfd14136
       WINDOWSHVM: ami-0667e6e9c2c1b6e50
@@ -269,7 +274,7 @@ Mappings:
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     ap-southeast-2:
-      AMZN2LINUXHVM: ami-020d764f9372da231
+      AMZN2LINUXHVM: ami-0ded330691a314693
       WINDOWSHVM: ami-09624659bc7805447
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
@@ -283,6 +288,11 @@ Mappings:
       WINDOWSHVM: ami-07fc7611503eb6b29
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
+    eu-north-1:
+      AMZN2LINUXHVM: ami-039609244d2810a6b
+      WINDOWSHVM: ami-095ffa1ff84ea8be5
+      InstanceType: m4.large
+      InstanceTypeDatabase: db.m4.large
     eu-west-1:
       AMZN2LINUXHVM: ami-07d9160fa81ccffb5
       WINDOWSHVM: ami-03b9a7c8f0fc1808e
@@ -291,6 +301,11 @@ Mappings:
     eu-west-2:
       AMZN2LINUXHVM: ami-0a13d44dccf1f5cf6
       WINDOWSHVM: ami-0ae15c1544cd06ac8
+      InstanceType: m4.large
+      InstanceTypeDatabase: db.m4.large
+    eu-west-3:
+      AMZN2LINUXHVM: ami-093fa4c538885becf
+      WINDOWSHVM: ami-0e303950b25cd16fd
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     sa-east-1:
@@ -308,14 +323,14 @@ Mappings:
       WINDOWSHVM: ami-0b697c4ae566cad55
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
-    us-gov-west-1:
-      AMZN2LINUXHVM: ami-90163af1
-      InstanceType: m4.large
-      InstanceTypeDatabase: db.m3.large
-    us-gov-east-1:
-      AMZN2LINUXHVM: ami-6fb25f1e
-      InstanceType: m4.large
-      InstanceTypeDatabase: db.m3.large
+    # us-gov-west-1:
+    #   AMZN2LINUXHVM: ami-90163af1
+    #   InstanceType: m4.large
+    #   InstanceTypeDatabase: db.m3.large
+    # us-gov-east-1:
+    #   AMZN2LINUXHVM: ami-6fb25f1e
+    #   InstanceType: m4.large
+    #   InstanceTypeDatabase: db.m3.large
     us-west-1:
       AMZN2LINUXHVM: ami-05655c267c89566dd
       WINDOWSHVM: ami-0638c86895db9bc9c
