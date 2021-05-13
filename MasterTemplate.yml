@@ -358,10 +358,12 @@ Conditions:
   DeployWordPress: !And
     - !Equals [ 'Linux', !Ref OsPlatform ]
     - !Condition isAppWordPress
-
   DeployLAMP: !And
     - !Equals [ 'Linux', !Ref OsPlatform ]
     - !Condition isAppLAMP
+  DeployDrupal: !And
+    - !Equals [ 'Linux', !Ref OsPlatform]
+    - !Condition isAppDrupal
 
   # LaunchMariaDBInstance: !Equals [!Ref DBEngine, MariaDB ]
   
@@ -610,12 +612,103 @@ Resources:
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         rCertificateArn: !Ref rCertificateArn
         Tag: !Ref Tag
-  ApplicationTemplateLinux2:
+  ApplicationTemplateLinuxLAMP:
     Condition: DeployLAMP
     Type: AWS::CloudFormation::Stack
     DependsOn: ProductionVpcTemplate
     Properties:
       TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/CustomTemplates/PlatformTemplates/ApplicationTemplateLinuxLAMP.yml
+      # TimeoutInMinutes: 30
+      Parameters:
+        pSecurityAlarmTopic:
+          !GetAtt
+          - LoggingTemplate
+          - Outputs.rSecurityAlarmTopic
+        pEC2KeyPair: !Ref pEC2KeyPair
+        pProductionCIDR: 10.100.0.0/16
+        pProductionVPC:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rVPCProduction
+        pDMZSubnetA:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rDMZSubnetA
+        pDMZSubnetB:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rDMZSubnetB
+        pAppPrivateSubnetA:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rAppPrivateSubnetA
+        pAppPrivateSubnetB:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rAppPrivateSubnetB
+        pWebInstanceType:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - InstanceType
+        pAppInstanceType:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - InstanceType
+        pDBPrivateSubnetA:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rDBPrivateSubnetA
+        pDBPrivateSubnetB:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rDBPrivateSubnetB
+        pManagementCIDR: 10.10.0.0/16
+        pRegionAZ1Name: !Ref pAvailabilityZoneA
+        pRegionAZ2Name: !Ref pAvailabilityZoneB
+        pWebServerAMI:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - AMZN2LINUXHVM
+        pAppAmi:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - AMZN2LINUXHVM
+        pDBUser: testuserdb
+        pDBName: testDB
+        DBEngine: !Ref DBEngine
+        pDBPassword: !Ref pDBPassword
+        pDBClass:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - InstanceTypeDatabase
+        pDBAllocatedStorage: '10'
+        pEnvironment:
+          !FindInMap
+          - CustomVariables
+          - vResourceEnvironmentTagValue
+          - Value
+        pBastionSSHCIDR: 0.0.0.0/0
+        pSupportsGlacier:
+          !FindInMap
+          - RegionServiceSupport
+          - !Ref AWS::Region
+          - Glacier
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        rCertificateArn: !Ref rCertificateArn
+        Tag: !Ref Tag
+  ApplicationTemplateLinuxDrupal:
+    Condition: DeployDrupal
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ProductionVpcTemplate
+    Properties:
+      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/CustomTemplates/PlatformTemplates/ApplicationTemplateLinuxDrupal.yml
       # TimeoutInMinutes: 30
       Parameters:
         pSecurityAlarmTopic:
@@ -712,16 +805,43 @@ Outputs:
       !GetAtt
       - ManagementVpcTemplate
       - Outputs.rBastionInstanceIP
-  LandingPageURL:
+  LandingPageURLWordPress:
     Value:
       !GetAtt
       - ApplicationTemplateLinuxWordPress
       - Outputs.LandingPageURL
-  WebsiteURL:
+    Condition: DeployWordPress
+  WebsiteURLWordPress:
     Value:
       !GetAtt
       - ApplicationTemplateLinuxWordPress
       - Outputs.WebsiteURL
+    Condition: DeployWordPress
+  LandingPageURLLAMP:
+    Value:
+      !GetAtt
+      - ApplicationTemplateLinuxLAMP
+      - Outputs.LandingPageURL
+    Condition: DeployLAMP
+  WebsiteURLLAMP:
+    Value:
+      !GetAtt
+      - ApplicationTemplateLinuxLAMP
+      - Outputs.WebsiteURL
+    Condition: DeployLAMP
+  LandingPageURLDrupal:
+    Value:
+      !GetAtt
+      - ApplicationTemplateLinuxDrupal
+      - Outputs.LandingPageURL
+    Condition: DeployDrupal
+  WebsiteURLDrupal:
+    Value:
+      !GetAtt
+      - ApplicationTemplateLinuxDrupal
+      - Outputs.WebsiteURL
+    Condition: DeployDrupal
+  
   Help:
     Description: For assistance or questions regarding this quickstart please email
       compliance-accelerator@amazon.com
