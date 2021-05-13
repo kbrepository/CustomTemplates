@@ -275,30 +275,37 @@ Mappings:
       InstanceTypeDatabase: db.m4.large
     ca-central-1:
       AMZN2LINUXHVM: ami-013d1df4bcea6ba95
+      WINDOWSHVM: ami-014b44224c1c8ca4d
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     eu-central-1:
       AMZN2LINUXHVM: ami-0c115dbd34c69a004
+      WINDOWSHVM: ami-07fc7611503eb6b29
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     eu-west-1:
       AMZN2LINUXHVM: ami-07d9160fa81ccffb5
+      WINDOWSHVM: ami-03b9a7c8f0fc1808e
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     eu-west-2:
       AMZN2LINUXHVM: ami-0a13d44dccf1f5cf6
+      WINDOWSHVM: ami-0ae15c1544cd06ac8
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     sa-east-1:
       AMZN2LINUXHVM: ami-018ccfb6b4745882a
+      WINDOWSHVM: ami-0d0ab8d85ca601d7e
       InstanceType: m4.large
       InstanceTypeDatabase: db.m3.large
     us-east-1:
       AMZN2LINUXHVM: ami-02354e95b39ca8dec
+      WINDOWSHVM: ami-0f93c815788872c5d
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     us-east-2:
       AMZN2LINUXHVM: ami-07c8bc5c1ce9598c3
+      WINDOWSHVM: ami-0b697c4ae566cad55
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     us-gov-west-1:
@@ -311,10 +318,12 @@ Mappings:
       InstanceTypeDatabase: db.m3.large
     us-west-1:
       AMZN2LINUXHVM: ami-05655c267c89566dd
+      WINDOWSHVM: ami-0638c86895db9bc9c
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
     us-west-2:
       AMZN2LINUXHVM: ami-0873b46c45c11058d
+      WINDOWSHVM: ami-0b7ebdd52b84c244d
       InstanceType: m4.large
       InstanceTypeDatabase: db.m4.large
 Conditions:
