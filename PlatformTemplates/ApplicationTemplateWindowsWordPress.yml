@@ -721,9 +721,9 @@ Resources:
       Tags:
       - Key: Name
         Value: !Join [ "-", [!Ref Tag, PreProcessor]]
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT10M
+    # CreationPolicy:
+    #   ResourceSignal:
+    #     Timeout: PT10M
   rWebInstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -1413,12 +1413,12 @@ Outputs:
     Description: Source security group for RDS security group.
     Export:
       Name: !Sub '${Tag}-rSecurityGroupAppInstance'
-  LandingPageURL:
-    Value: !Sub https://${rALBWeb.DNSName}/landing.html
-    Description: Landing Page
-  WebsiteURL:
-    Value: !Sub https://${rALBWeb.DNSName}/wordpress/wp-admin/install.php
-    Description: WordPress Website (demonstration purposes only)
+  # LandingPageURL:
+  #   Value: !Sub https://${rALBWeb.DNSName}/landing.html
+  #   Description: Landing Page
+  # WebsiteURL:
+  #   Value: !Sub https://${rALBWeb.DNSName}/wordpress/wp-admin/install.php
+  #   Description: WordPress Website (demonstration purposes only)
   rSecurityGroupWeb:
     Value: !Ref rSecurityGroupWeb
   rSecurityGroupApp:
