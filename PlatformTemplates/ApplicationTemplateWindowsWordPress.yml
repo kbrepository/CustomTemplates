@@ -538,7 +538,7 @@ Resources:
     Properties: 
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 10
-      HealthCheckPath: /landing.html
+      HealthCheckPath: /
       HealthCheckPort: traffic-port
       HealthCheckProtocol: HTTPS
       HealthCheckTimeoutSeconds: 5
@@ -782,7 +782,7 @@ Resources:
     - rALBApp
     - rAutoScalingGroupApp
     # - rPreProcInstance
-    Metadata:
+    # Metadata:
       # AWS::CloudFormation::Init:
       #   config:
       #     packages:
