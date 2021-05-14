@@ -351,10 +351,13 @@ Conditions:
     !Equals
     - !Ref pVPCTenancy
     - dedicated
+
+### Application stack
   isAppWordPress: !Equals [ 'WordPress', !Ref pApplication]
   isAppLAMP: !Equals [ 'LAMP', !Ref pApplication]
   isAppDrupal: !Equals [ 'Drupal', !Ref pApplication]
 
+### Amazon Linux 2 Platform
   DeployWordPress: !And
     - !Equals [ 'Linux', !Ref OsPlatform ]
     - !Condition isAppWordPress
@@ -364,6 +367,11 @@ Conditions:
   DeployDrupal: !And
     - !Equals [ 'Linux', !Ref OsPlatform]
     - !Condition isAppDrupal
+
+### Windows 2019 Platform
+  DeployWindows1: !And
+    - !Equals [ 'Windows', !Ref OsPlatform ]
+    - !Condition isAppWordPress
 
   # LaunchMariaDBInstance: !Equals [!Ref DBEngine, MariaDB ]
   
@@ -795,7 +803,7 @@ Resources:
         rCertificateArn: !Ref rCertificateArn
         Tag: !Ref Tag
   ApplicationTemplateWindowsWordPress:
-    Condition: DeployWordPress
+    Condition: DeployWindows1
     Type: AWS::CloudFormation::Stack
     DependsOn: ProductionVpcTemplate
     Properties:
@@ -932,6 +940,19 @@ Outputs:
       - ApplicationTemplateLinuxDrupal
       - Outputs.WebsiteURL
     Condition: DeployDrupal
+  
+  LandingPageURLWindows1:
+    Value:
+      !GetAtt
+      - ApplicationTemplateWindowsWordPress
+      - Outputs.LandingPageURL
+    Condition: DeployWindows1
+  WebsiteURLWindows1:
+    Value:
+      !GetAtt
+      - ApplicationTemplateWindowsWordPress
+      - Outputs.WebsiteURL
+    Condition: DeployWindows1
   
   Help:
     Description: For assistance or questions regarding this quickstart please email
