@@ -941,18 +941,18 @@ Outputs:
       - Outputs.WebsiteURL
     Condition: DeployDrupal
   
-  LandingPageURLWindows1:
-    Value:
-      !GetAtt
-      - ApplicationTemplateWindowsWordPress
-      - Outputs.LandingPageURL
-    Condition: DeployWindows1
-  WebsiteURLWindows1:
-    Value:
-      !GetAtt
-      - ApplicationTemplateWindowsWordPress
-      - Outputs.WebsiteURL
-    Condition: DeployWindows1
+  # LandingPageURLWindows1:
+  #   Value:
+  #     !GetAtt
+  #     - ApplicationTemplateWindowsWordPress
+  #     - Outputs.LandingPageURL
+  #   Condition: DeployWindows1
+  # WebsiteURLWindows1:
+  #   Value:
+  #     !GetAtt
+  #     - ApplicationTemplateWindowsWordPress
+  #     - Outputs.WebsiteURL
+  #   Condition: DeployWindows1
   
   Help:
     Description: For assistance or questions regarding this quickstart please email

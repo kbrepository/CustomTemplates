@@ -1060,90 +1060,56 @@ Resources:
     DependsOn:
     - rRDSInstanceMySQL
     # - rPreProcInstance
-    # Metadata:
-    #   AWS::CloudFormation::Init:
-    #     configSets:
-    #       wordpress_install:
-    #       - install_cfn
-    #       - install_wordpress
-    #     install_cfn:
-    #       files:
-    #         /etc/cfn/cfn-hup.conf:
-    #           content: !Sub |
-    #             [main]
-    #             stack=${AWS::StackId}
-    #             region=${AWS::Region}
-    #           mode: '000400'
-    #           owner: root
-    #           group: root
-    #         /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-    #           content: !Sub |
-    #             [cfn-auto-reloader-hook]
-    #             triggers=post.update
-    #             path=Resources.rAutoScalingConfigApp.Metadata.AWS::CloudFormation::Init
-    #             action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingGroupApp --configsets wordpress_install --region ${AWS::Region}
-    #           mode: '000400'
-    #           owner: root
-    #           group: root
-    #       services:
-    #         sysvinit:
-    #           cfn-hup:
-    #             enabled: true
-    #             ensureRunning: true
-    #             files:
-    #             - /etc/cfn/cfn-hup.conf
-    #             - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-    #     install_wordpress:
-    #       commands:
-    #         0_enable_mariadb:
-    #           command: amazon-linux-extras enable lamp-mariadb10.2-php7.2
-    #         1_yum_clean:
-    #           command: yum clean metadata
-    #         2_php_install:
-    #          command: yum install -y php-cli php-pdo php-fpm php-json php-mysqlnd mariadb
-    #       sources:
-    #         /var/www/html: https://wordpress.org/latest.tar.gz
-    #       files:
-    #         /tmp/httpd/ssl.conf:
-    #           content: |
-    #             Listen 443
-    #             <VirtualHost *:443>
-    #             DocumentRoot /var/www/html
-    #             LoadModule ssl_module /etc/httpd/modules/mod_ssl.so
-    #             SSLEngine on
-    #             SSLCertificateFile /etc/ssl/certs/common.crt
-    #             SSLCertificateKeyFile /etc/ssl/private/common.key
-    #             </VirtualHost>
-    #           mode: '000755'
-    #           owner: root
-    #           group: root
-    #         /var/www/html/wordpress/wp-config.php:
-    #           content: !Sub |
-    #             <?php
-    #             define('DB_NAME', '${pDBName}');
-    #             define('DB_USER', '${pDBUser}');
-    #             define('DB_PASSWORD', '${pDBPassword}');
-    #             define('DB_HOST', '${rRDSInstanceMySQL.Endpoint.Address}');
-    #             define('FORCE_SSL_ADMIN', true);
-    #             if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) { $_SERVER['HTTPS']='on'; }
-    #             define('DB_CHARSET', 'utf8');
-    #             define('DB_COLLATE', '');
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            c:\cfn\cfn-hup.conf:
+              content:
+                Fn::Join:
+                - ''
+                - - "[main]\n"
+                  - stack=
+                  - Ref: AWS::StackId
+                  - "\n"
+                  - region=
+                  - Ref: AWS::Region
+                  - "\n"
+            c:\cfn\hooks.d\cfn-auto-reloader.conf:
+              content:
+                Fn::Join:
+                - ''
+                - - "[cfn-auto-reloader-hook]\n"
+                  - 'triggers=post.update
 
-    #             $table_prefix = 'wp_';
-    #             define('WP_DEBUG', false);
+                    '
+                  - 'path=Resources.SharePointFoundation.Metadata.AWS::CloudFormation::Init
 
-    #             if ( !defined('ABSPATH') )
-    #               define('ABSPATH', dirname(__FILE__) . '/');
-
-    #             require_once(ABSPATH . 'wp-settings.php');
-    #           mode: '000644'
-    #           owner: root
-    #           group: root
-    #       services:
-    #         sysvinit:
-    #           httpd:
-    #             enabled: true
-    #             ensureRunning: true
+                    '
+                  - 'action=cfn-init.exe -v -s '
+                  - Ref: AWS::StackId
+                  - " -r SharePointFoundation"
+                  - " --region "
+                  - Ref: AWS::Region
+                  - "\n"
+            C:\SharePoint\SharePointFoundation2010.exe:
+              source: http://d3adzpja92utk0.cloudfront.net/SharePointFoundation.exe
+          commands:
+            1-extract:
+              command: C:\SharePoint\SharePointFoundation2010.exe /extract:C:\SharePoint\SPF2010
+                /quiet /log:C:\SharePoint\SharePointFoundation2010-extract.log
+            2-prereq:
+              command: C:\SharePoint\SPF2010\PrerequisiteInstaller.exe /unattended
+            3-install:
+              command: C:\SharePoint\SPF2010\setup.exe /config C:\SharePoint\SPF2010\Files\SetupSilent\config.xml
+          services:
+            windows:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - c:\cfn\cfn-hup.conf
+                - c:\cfn\hooks.d\cfn-auto-reloader.conf
     Properties:
       ImageId: !Ref pAppAmi
       IamInstanceProfile: !Ref rAppInstanceProfile
@@ -1158,89 +1124,22 @@ Resources:
       LaunchConfigurationName: !Join [ "-", [!Ref Tag, AutoScalingConfigApp ]]
       SecurityGroups:
       - !Ref rSecurityGroupAppInstance
-      # UserData:
-      #   Fn::Base64:
-      #     !Sub
-      #     - |
-      #       #!/bin/bash -x
-      #       yum update -y
-
-      #       # install SSL cert common key
-      #       yum -y install mod_ssl
-
-      #       # aws configure set default.s3.signature_version s3v4
-      #       # aws s3 cp s3://${rS3AssetsBucket}/ssl/common.crt /etc/ssl/certs/common.crt --region ${AWS::Region}
-      #       # aws s3 cp s3://${rS3AssetsBucket}/ssl/common.key /etc/ssl/private/common.key --region ${AWS::Region}
-      #       aws s3 cp s3://${CertificateBucket}/ssl/common.cert /etc/ssl/certs/common.crt --region ${AWS::Region}
-      #       aws s3 cp s3://${CertificateBucket}/ssl/common.key /etc/ssl/private/common.key --region ${AWS::Region}
-
-      #       EC2_INSTANCE_ID=$(curl -s http://instance-data/latest/meta-data/instance-id)
-
-      #       ######################################################################
-      #       # Volume /dev/sdh (which will get created as /dev/xvdh on Amazon Linux)
-
-      #       DATA_STATE="unknown"
-      #       until [ "${!DATA_STATE}" == "attached" ]; do
-      #         DATA_STATE=$(aws ec2 describe-volumes \
-      #         --region ${AWS::Region} \
-      #         --filters \
-      #               Name=attachment.instance-id,Values=${!EC2_INSTANCE_ID} \
-      #               Name=attachment.device,Values=/dev/sdh \
-      #         --query Volumes[].Attachments[].State \
-      #         --output text)
-
-      #         sleep 5
-      #       done
-
-      #       # Format /dev/xvdh if it does not contain a partition yet
-      #       if [ "$(file -b -s /dev/xvdh)" == "data" ]; then
-      #         mkfs -t ext4 /dev/xvdh
-      #       fi
-
-      #       mkdir -p /data
-      #       mount /dev/xvdh /data
-
-      #       # Persist the volume in /etc/fstab so it gets mounted again
-      #       echo '/dev/xvdh /data ext4 defaults,nofail 0 2' >> /etc/fstab
-
-      #       /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource rAutoScalingConfigApp --configsets wordpress_install --region ${AWS::Region}
-
-      #       cp /tmp/httpd/ssl.conf /etc/httpd/conf.d/ssl.conf
-      #       service httpd restart
-
-      #       ######################################################################
-      #       #     NOTE: UPDATE THESE VALUES ACCORDING TO THE COMPLIANCE BODY     #
-      #       ######################################################################
-      #       LANDING_PAGE="/var/www/html/landing.html"
-      #       IMAGES-FLD="/var/www/html/images"
-      #       COMPLIANCE_BODY_LABEL="HIPAA"
-      #       COMPLIANCE_SURVEY_LINK="hipaa"
-      #       COMPLIANCE_MATRIX_FILENAME="HIPAA-Security-Controls-Mapping.xlsx"
-      #       ######################################################################
-
-      #       # Download the landing page.
-      #       sudo aws s3 cp --region=${S3Region} s3://${S3Bucket}/${QSS3KeyPrefix}assets/landing/landing.html $LANDING_PAGE
-
-      #       # Replace relative image links with links to the production S3 source.
-      #       sudo aws s3 cp --region=${S3Region} s3://${S3Bucket}/${QSS3KeyPrefix}assets/landing/images.zip /var/www/html/
-      #       sudo /usr/bin/unzip /var/www/html/images.zip -d /var/www/html/
-      #       sudo chown nobody.nfsnobody -R /var/www/html/
-      #       sudo sed -i 's|images|/var/www/html/images|g' $LANDING_PAGE
-
-      #       # Inject the landing page branding label.
-      #       sudo sed -i "s|{compliance-body}|$COMPLIANCE_BODY_LABEL|g" $LANDING_PAGE
-
-      #       # Inject the survey link parameter.
-      #       sudo sed -i "s|{compliance-body-survey-link}|$COMPLIANCE_SURVEY_LINK|g" $LANDING_PAGE
-
-      #       # Inject the security control matrix file location.
-      #       aws s3 cp --region=${S3Region} s3://${S3Bucket}/${QSS3KeyPrefix}assets/$COMPLIANCE_MATRIX_FILENAME /var/www/html/$COMPLIANCE_MATRIX_FILENAME
-      #       sudo sed -i "s|{compliance-body-matrix}|$COMPLIANCE_MATRIX_FILENAME|g" $LANDING_PAGE
-      #       echo Send the CFN signal
-
-      #       /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region}
-      #     - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-      #       S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}', !Ref QSS3BucketName]
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "<script>\n"
+            - 'cfn-init.exe -v -s '
+            - Ref: AWS::StackId
+            - " -r rAutoScalingConfigApp"
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackName} --resource rAutoScalingGroupApp --region ${AWS::Region} '
+            # - Fn::Base64:
+            #     Ref: SharePointFoundationWaitHandle
+            - "\n"
+            - "</script>"
   rAutoScalingGroupApp:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: 
