@@ -974,12 +974,13 @@ Outputs:
     Value: Standard Multi-Tier Web Application
   TemplateVersion:
     Value: 2.0
-  BastionIP:
+  BastionIPLinux:
     Description: Use this IP via SSH to connect to Bastion Instance
     Value:
       !GetAtt
       - ManagementVpcTemplate
       - Outputs.rBastionInstanceIP
+    Condition: LaunchManagementVpcTemplateLinux
   LandingPageURLWordPress:
     Value:
       !GetAtt
