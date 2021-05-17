@@ -1140,7 +1140,7 @@ Resources:
             #     Ref: SharePointFoundationWaitHandle
             - "\n"
             - "</script>"
-
+        
   rAutoScalingGroupApp:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: 
