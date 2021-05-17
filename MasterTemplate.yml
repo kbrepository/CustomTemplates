@@ -351,6 +351,14 @@ Conditions:
     !Equals
     - !Ref pVPCTenancy
     - dedicated
+  
+## Management VPC Template for Various Os Platform
+  LaunchManagementVpcTemplateLinux: !Equals [!Ref OsPlatform, 'Linux']
+  LaunchManagementVpcTemplateWindows: !Equals [!Ref OsPlatform, 'Windows']
+
+## Config Template for Various Os Platform
+  LaunchConfigTemplateLinux: !Equals [!Ref OsPlatform, 'Linux']
+  LaunchConfigTemplateWindows: !Equals [!Ref OsPlatform, 'Windows']
 
 ### Application stack
   isAppWordPress: !Equals [ 'WordPress', !Ref pApplication]
@@ -446,6 +454,7 @@ Resources:
         Tag: !Ref Tag
   ManagementVpcTemplate:
     Type: AWS::CloudFormation::Stack
+    Condition: LaunchManagementVpcTemplateLinux
     DependsOn: ProductionVpcTemplate
     Properties:
       TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/CustomTemplates/ManagementVpcTemplate.yml
@@ -501,6 +510,73 @@ Resources:
           - AWSAMIRegionMap
           - !Ref AWS::Region
           - AMZN2LINUXHVM
+        pNatInstanceType:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - InstanceType
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
+        QSS3KeyPrefix: !Sub ${QSS3KeyPrefix}submodules/quickstart-compliance-common/
+        Tag: !Ref Tag
+  ManagementVpcTemplateWindows:
+    Type: AWS::CloudFormation::Stack
+    Condition: LaunchManagementVpcTemplateWindows
+    DependsOn: ProductionVpcTemplate
+    Properties:
+      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/CustomTemplates/ManagementVpcTemplateWindows.yml
+      TimeoutInMinutes: 20
+      Parameters:
+        pProductionVPC:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rVPCProduction
+        pRouteTableProdPrivate:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rRouteTableProdPrivate
+        pRouteTableProdPublic:
+          !GetAtt
+          - ProductionVpcTemplate
+          - Outputs.rRouteTableProdPublic
+        pProductionCIDR: 10.100.0.0/16
+        pBastionSSHCIDR: 0.0.0.0/0
+        pManagementCIDR: 10.10.0.0/16
+        pManagementDMZSubnetACIDR: 10.10.1.0/24
+        pManagementDMZSubnetBCIDR: 10.10.2.0/24
+        pManagementPrivateSubnetACIDR: 10.10.20.0/24
+        pManagementPrivateSubnetBCIDR: 10.10.30.0/24
+        pManagementVPCName: Management VPC
+        pEC2KeyPairBastion: !Ref pEC2KeyPairBastion
+        pEC2KeyPair: !Ref pEC2KeyPair
+        pVPCTenancy: !Ref pVPCTenancy
+        pBastionAmi:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - WINDOWSHVM
+        pRegionAZ1Name: !Ref pAvailabilityZoneA
+        pRegionAZ2Name: !Ref pAvailabilityZoneB
+        pEnvironment:
+          !FindInMap
+          - CustomVariables
+          - vResourceEnvironmentTagValue
+          - Value
+        pBastionInstanceType:
+          !If
+          - LaunchAsDedicatedInstance
+          - m4.large
+          - t2.small
+        pSupportsNatGateway:
+          !FindInMap
+          - RegionServiceSupport
+          - !Ref AWS::Region
+          - NatGateway
+        pNatAmi:
+          !FindInMap
+          - AWSAMIRegionMap
+          - !Ref AWS::Region
+          - WINDOWSHVM
         pNatInstanceType:
           !FindInMap
           - AWSAMIRegionMap
