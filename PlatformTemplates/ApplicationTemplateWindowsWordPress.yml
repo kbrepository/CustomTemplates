@@ -311,8 +311,8 @@ Resources:
         ToPort: 80
         CidrIp: !Ref pProductionCIDR
       - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
+        FromPort: 3389
+        ToPort: 3389
         CidrIp: !Ref pManagementCIDR
       SecurityGroupEgress:
       - IpProtocol: tcp
@@ -372,9 +372,9 @@ Resources:
         FromPort: 80
         ToPort: 80
         CidrIp: !Ref pProductionCIDR
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
+      - IpProtocol: rdp
+        FromPort: 3389
+        ToPort: 3389
         CidrIp: !Ref pManagementCIDR
       SecurityGroupEgress:
       - IpProtocol: tcp

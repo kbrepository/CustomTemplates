@@ -433,12 +433,12 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Join [ "-", [!Ref Tag, Management-SecurityGroupSSHFromMgmt]]
-      GroupDescription: Enable SSH access via port 22
+      GroupDescription: Enable RDP access via port 3389
       VpcId: !Ref rVPCManagement
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
+      - IpProtocol: rdp
+        FromPort: 3389
+        ToPort: 3389
         CidrIp: !Ref pManagementCIDR
       Tags:
       - Key: Name
@@ -491,9 +491,9 @@ Resources:
       GroupDescription: SG for Bastion Instances
       VpcId: !Ref rVPCManagement
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
+      - IpProtocol: rdp
+        FromPort: 3389
+        ToPort: 3389
         CidrIp: !Ref pBastionSSHCIDR
       SecurityGroupEgress:
       - IpProtocol: tcp
@@ -502,7 +502,7 @@ Resources:
         CidrIp: 0.0.0.0/0
       Tags:
       - Key: Name
-        Value: sg-ssh-access-from-bastion
+        Value: sg-rdp-access-from-bastion
       - Key: Environment
         Value: !Ref pEnvironment
   rPeeringConnectionProduction:
