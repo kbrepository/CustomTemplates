@@ -436,7 +436,7 @@ Resources:
       GroupDescription: Enable RDP access via port 3389
       VpcId: !Ref rVPCManagement
       SecurityGroupIngress:
-      - IpProtocol: rdp
+      - IpProtocol: tcp
         FromPort: 3389
         ToPort: 3389
         CidrIp: !Ref pManagementCIDR
@@ -491,7 +491,7 @@ Resources:
       GroupDescription: SG for Bastion Instances
       VpcId: !Ref rVPCManagement
       SecurityGroupIngress:
-      - IpProtocol: rdp
+      - IpProtocol: tcp
         FromPort: 3389
         ToPort: 3389
         CidrIp: !Ref pBastionSSHCIDR

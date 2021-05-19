@@ -174,7 +174,7 @@ Resources:
             def lambda_handler(event, context):
                 import boto3
 
-                config = boto3.client('configservice')
+                config = boto3.client('config')
                 invoking_event = event['invokingEvent']
                 rule_parameters = event['ruleParameters']
                 compliance = "NOT_APPLICABLE"
@@ -201,7 +201,7 @@ Resources:
                 }
 
                 config.put_evaluations(put_eval_req)
-      Handler: lambda_function.lambda_handler
+      Handler: index.lambda_handler
       Runtime: python3.7
       Timeout: 30
       Role:
