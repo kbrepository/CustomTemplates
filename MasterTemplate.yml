@@ -343,22 +343,21 @@ Mappings:
       InstanceTypeDatabase: db.m4.large
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'hipaa-on-aws-cirrusform']
-  LoadConfigRulesTemplate:
-    !Equals
-    - !Ref pSupportsConfig
-    - 'true'
-  LaunchAsDedicatedInstance: 
-    !Equals
-    - !Ref pVPCTenancy
-    - dedicated
+  LoadConfigRulesTemplate: !Equals [ !Ref pSupportsConfig, 'true' ]
+  LaunchAsDedicatedInstance: !Equals [ !Ref pVPCTenancy, 'dedicated' ]
   
 ## Management VPC Template for Various Os Platform
   LaunchManagementVpcTemplateLinux: !Equals [!Ref OsPlatform, 'Linux']
   LaunchManagementVpcTemplateWindows: !Equals [!Ref OsPlatform, 'Windows']
 
 ## Config Template for Various Os Platform
-  LaunchConfigTemplateLinux: !Equals [!Ref OsPlatform, 'Linux']
-  LaunchConfigTemplateWindows: !Equals [!Ref OsPlatform, 'Windows']
+  LaunchConfigTemplateLinux: !And
+    - !Equals [!Ref OsPlatform, 'Linux']
+    - !Condition LoadConfigRulesTemplate
+
+  LaunchConfigTemplateWindows: !And
+    - !Equals [!Ref OsPlatform, 'Windows']
+    - !Condition LoadConfigRulesTemplate
 
 ### Application stack
   isAppWordPress: !Equals [ 'WordPress', !Ref pApplication]
@@ -586,16 +585,17 @@ Resources:
         QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Sub ${QSS3KeyPrefix}submodules/quickstart-compliance-common/
         Tag: !Ref Tag
-  ConfigRulesTemplate:
+  ConfigRulesTemplateLinux:
     Type: AWS::CloudFormation::Stack
-    Condition: LoadConfigRulesTemplate
+    # Condition: LoadConfigRulesTemplate
+    Condition: LaunchConfigTemplateLinux
     DependsOn:
     - IamTemplate
     - ProductionVpcTemplate
     - ManagementVpcTemplate
     - LoggingTemplate
     Properties:
-      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/CustomTemplates/ConfigRulesTemplate.yml
+      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/CustomTemplates/ConfigRulesTemplateLinux.yml
       TimeoutInMinutes: 20
       Parameters:
         pRequiredTagKey:
@@ -604,7 +604,27 @@ Resources:
           - vResourceEnvironmentTagKey
           - Value
         Tag: !Ref Tag
-        CertificateBucket: !Ref CertificateBucket
+        # CertificateBucket: !Ref CertificateBucket
+  ConfigRulesTemplateWindows:
+    Type: AWS::CloudFormation::Stack
+    # Condition: LoadConfigRulesTemplate
+    Condition: LaunchConfigTemplateWindows
+    DependsOn:
+    - IamTemplate
+    - ProductionVpcTemplate
+    - ManagementVpcTemplateWindows
+    - LoggingTemplate
+    Properties:
+      TemplateURL: https://hipaa-on-aws-cirrusform.s3.amazonaws.com/CustomTemplates/ConfigRulesTemplateWindows.yml
+      TimeoutInMinutes: 20
+      Parameters:
+        pRequiredTagKey:
+          !FindInMap
+          - CustomVariables
+          - vResourceEnvironmentTagKey
+          - Value
+        Tag: !Ref Tag
+        # CertificateBucket: !Ref CertificateBucket
   ApplicationTemplateLinuxWordPress:
     Condition: DeployWordPress
     Type: AWS::CloudFormation::Stack
@@ -981,6 +1001,13 @@ Outputs:
       - ManagementVpcTemplate
       - Outputs.rBastionInstanceIP
     Condition: LaunchManagementVpcTemplateLinux
+  BastionIPWindows:
+    Description: Use this IP via RDP to connect to Bastion Instance
+    Value:
+      !GetAtt
+      - ManagementVpcTemplateWindows
+      - Outputs.rBastionInstanceIP
+    Condition: LaunchManagementVpcTemplateWindows
   LandingPageURLWordPress:
     Value:
       !GetAtt
