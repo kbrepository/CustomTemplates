@@ -380,6 +380,8 @@ Conditions:
     - !Equals [ 'Windows', !Ref OsPlatform ]
     - !Condition isAppWordPress
 
+
+
   # LaunchMariaDBInstance: !Equals [!Ref DBEngine, MariaDB ]
   
   # LaunchLinuxInstances: !Equals [ !Ref OsPlatform, Linux ]
